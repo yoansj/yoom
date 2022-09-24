@@ -15,6 +15,7 @@ import Exit from '../assets/icons/Exit';
 import {theme} from '../config/theme';
 import Camera from '../assets/icons/Camera';
 import CameraOff from '../assets/icons/CameraOff';
+import SwitchCamera from '../assets/icons/SwitchCamera';
 
 const dimensions = {
   width: Dimensions.get('window').width,
@@ -104,13 +105,17 @@ export default function Call() {
     }
   };
 
+  const moreThan4Participants = participantsUids.length >= 4;
+
   return (
     <View flex={1}>
       <Text position="absolute" zIndex={50} color="primary.500">
         My uid: ({uid}) Participants UID: ({participantsUids.toString()})
       </Text>
       <View style={styles.max}>
-        <SelfPreview participantsNumber={participantsUids.length} />
+        {moreThan4Participants === false && (
+          <SelfPreview participantsNumber={participantsUids.length} />
+        )}
         <ScrollView
           width="100%"
           height="100%"
@@ -128,6 +133,8 @@ export default function Call() {
                   width:
                     participantsUids.length === 1
                       ? dimensions.width
+                      : moreThan4Participants
+                      ? dimensions.width / 2
                       : dimensions.width,
                   height:
                     participantsUids.length === 1
@@ -140,6 +147,18 @@ export default function Call() {
               />
             );
           })}
+          {moreThan4Participants && (
+            <RtcSurfaceView
+              key={`${uid}-${4}`}
+              style={{
+                width: dimensions.width / 2,
+                height: dimensions.height / 2.2,
+                marginHorizontal: 2.5,
+                flex: 1,
+              }}
+              canvas={{uid: 0}}
+            />
+          )}
         </ScrollView>
       </View>
       <Box
@@ -166,6 +185,9 @@ export default function Call() {
           ) : (
             <CameraOff stroke={theme.colors.primary[500]} />
           )}
+        </Button>
+        <Button variant="ghost" onPress={() => engine.switchCamera()}>
+          <SwitchCamera stroke={theme.colors.primary[500]} />
         </Button>
       </Box>
     </View>
