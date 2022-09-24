@@ -38,11 +38,13 @@ export default function Home() {
         engine.registerEventHandler({
           onUserJoined: (_, newUid) => {
             setParticipantsUids([...participantsUids, newUid]);
+            // Todo toast quand utiliateur rejoint
           },
           onUserOffline: (_, leaveUid, reason) => {
             setParticipantsUids(
               participantsUids.filter(uid => uid !== leaveUid),
             );
+            // Todo toast quand un participant quitte la room
           },
         });
         const rep = engine.joinChannel(keys.tempToken, roomId, uid, {
