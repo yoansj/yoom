@@ -1,15 +1,33 @@
 import create from 'zustand';
+import getRandomInt from '../utils/getRandomNumber';
 
 interface CallState {
   uid: number;
-  setUid: (uid: number) => void;
   participantsUids: number[];
-  setParticipantsUids: (participantsUids: number[]) => void;
+  pushUid: (uid: number) => void;
+  removeUid: (uid: number) => void;
+  resetUids: () => void;
 }
 
-export const useCallStore = create<CallState>(set => ({
-  uid: 0,
-  setUid: uid => set({uid}),
+export const useCallStore = create<CallState>((set, get) => ({
+  uid: getRandomInt(),
   participantsUids: [],
-  setParticipantsUids: participantsUids => set({participantsUids}),
+  pushUid: (uid: number) => {
+    const {participantsUids} = get();
+    // remove duplicates
+    set({
+      participantsUids: [...participantsUids, uid].filter(
+        (v, i, a) => a.indexOf(v) === i,
+      ),
+    });
+  },
+  removeUid: (uid: number) => {
+    const {participantsUids} = get();
+    set({
+      participantsUids: participantsUids.filter(
+        participantUid => participantUid !== uid,
+      ),
+    });
+  },
+  resetUids: () => set({participantsUids: []}),
 }));

@@ -6,7 +6,15 @@ import {engine} from '../config/engine';
 import {useCallStore} from '../stores/callStore';
 import {useUserStore} from '../stores/userStore';
 
-import {Dimensions, StyleSheet, TouchableOpacity} from 'react-native';
+import {Dimensions, StyleSheet} from 'react-native';
+import SelfPreview from '../components/SelfPreview';
+import {Image} from 'react-native-svg';
+import Microphone from '../assets/icons/Microphone';
+import MicrophoneOff from '../assets/icons/MicrophoneOff';
+import Exit from '../assets/icons/Exit';
+import {theme} from '../config/theme';
+import Camera from '../assets/icons/Camera';
+import CameraOff from '../assets/icons/CameraOff';
 
 const dimensions = {
   width: Dimensions.get('window').width,
@@ -39,14 +47,16 @@ const styles = StyleSheet.create({
   },
   remoteContainer: {
     width: '100%',
-    height: 150,
+    height: '100%',
     position: 'absolute',
-    top: 5,
+    top: 0,
+    display: 'flex',
   },
   remote: {
     width: 150,
     height: 150,
     marginHorizontal: 2.5,
+    flex: 1,
   },
   noUserText: {
     paddingHorizontal: 10,
@@ -59,6 +69,7 @@ export default function Call() {
   const navigation = useNavigation();
   const uid = useCallStore(state => state.uid);
   const participantsUids = useCallStore(state => state.participantsUids);
+  const resetUids = useCallStore(state => state.resetUids);
 
   const [muted, setMuted] = useState(false);
   const [videoMuted, setVideoMuted] = useState(false);
@@ -70,6 +81,7 @@ export default function Call() {
   const handleLeave = () => {
     engine.leaveChannel();
     navigation.goBack();
+    resetUids();
   };
 
   const handleMute = () => {
@@ -93,69 +105,69 @@ export default function Call() {
   };
 
   return (
-    <View style={styles.max}>
+    <View flex={1}>
+      <Text position="absolute" zIndex={50} color="primary.500">
+        My uid: ({uid}) Participants UID: ({participantsUids.toString()})
+      </Text>
       <View style={styles.max}>
-        <View style={styles.buttonHolder}>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}> Start Call </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleLeave} style={styles.button}>
-            <Text style={styles.buttonText}> End Call </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.fullView}>
-          <RtcSurfaceView style={styles.max} canvas={{uid: 0}} />
-        </View>
+        <SelfPreview participantsNumber={participantsUids.length} />
         <ScrollView
-          style={styles.remoteContainer}
+          width="100%"
+          height="100%"
+          position="absolute"
+          top={0}
+          display="flex"
+          flexDirection="column"
           contentContainerStyle={{paddingHorizontal: 2.5}}
-          horizontal={true}>
+          horizontal={false}>
           {participantsUids.map((value, index, array) => {
             return (
               <RtcSurfaceView
                 key={`${value}-${index}`}
-                style={styles.remote}
-                zOrderMediaOverlay={true}
+                style={{
+                  width:
+                    participantsUids.length === 1
+                      ? dimensions.width
+                      : dimensions.width,
+                  height:
+                    participantsUids.length === 1
+                      ? dimensions.height
+                      : dimensions.height / 2.2,
+                  marginHorizontal: 2.5,
+                  flex: 1,
+                }}
                 canvas={{uid: value}}
               />
             );
           })}
         </ScrollView>
       </View>
+      <Box
+        position="absolute"
+        width="100%"
+        bottom={0}
+        backgroundColor="transparent"
+        display="flex"
+        justifyContent="space-around"
+        flexDirection="row">
+        <Button variant="ghost" onPress={handleLeave}>
+          <Exit stroke={theme.colors.primary[500]} />
+        </Button>
+        <Button variant="ghost" onPress={handleMute} borderRadius={100}>
+          {muted ? (
+            <MicrophoneOff stroke={theme.colors.primary[500]} />
+          ) : (
+            <Microphone stroke={theme.colors.primary[500]} />
+          )}
+        </Button>
+        <Button variant="ghost" onPress={handleVideoMute}>
+          {videoMuted ? (
+            <Camera stroke={theme.colors.primary[500]} />
+          ) : (
+            <CameraOff stroke={theme.colors.primary[500]} />
+          )}
+        </Button>
+      </Box>
     </View>
   );
-
-  // return (
-  //   <Box display="flex" height="100%">
-  //     <RtcSurfaceView style={{flex: 1}} canvas={{uid: 0}} />
-  //     <ScrollView width="100%" height="150px" position="absolute" top={5}>
-  //       {participantsUids.map((uid, index) => (
-  //         <RtcSurfaceView
-  //           key={`${uid}-${index}`}
-  //           style={{height: 150}}
-  //           canvas={{uid}}
-  //           zOrderMediaOverlay
-  //         />
-  //       ))}
-  //     </ScrollView>
-  //     <Box
-  //       position="absolute"
-  //       width="100%"
-  //       bottom={0}
-  //       bg="primary.500"
-  //       display="flex"
-  //       justifyContent="space-around"
-  //       flexDirection="row">
-  //       <Button onPress={handleLeave}>
-  //         <Text>Leave</Text>
-  //       </Button>
-  //       <Button onPress={handleMute}>
-  //         <Text>{muted ? 'You are mute' : 'Mute'}</Text>
-  //       </Button>
-  //       <Button onPress={handleVideoMute}>
-  //         <Text>Hide camera</Text>
-  //       </Button>
-  //     </Box>
-  //   </Box>
-  // );
 }
