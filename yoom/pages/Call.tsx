@@ -81,7 +81,7 @@ export default function Call() {
 
   const handleLeave = () => {
     engine.leaveChannel();
-    navigation.goBack();
+    navigation.navigate('Home');
     resetUids();
   };
 
