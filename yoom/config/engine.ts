@@ -7,9 +7,6 @@ export const engine = createAgoraRtcEngine();
   const init = engine.initialize({appId: keys.appId});
   engine.enableVideo();
   engine.startPreview();
-  // engine.registerEventHandler({
-
-  // })
   switch (init) {
     case 0:
       console.log('Agora engine initialized');

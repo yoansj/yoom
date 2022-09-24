@@ -18,6 +18,8 @@ export default function Home() {
 
   const uid = useCallStore(state => state.uid);
   const setUid = useCallStore(state => state.setUid);
+  const participantsUids = useCallStore(state => state.participantsUids);
+  const setParticipantsUids = useCallStore(state => state.setParticipantsUids);
 
   const handleGoToCallScreen = async () => {
     try {
@@ -33,6 +35,16 @@ export default function Home() {
       ) {
         engine.leaveChannel();
         setUid(getRandomInt());
+        engine.registerEventHandler({
+          onUserJoined: (_, newUid) => {
+            setParticipantsUids([...participantsUids, newUid]);
+          },
+          onUserOffline: (_, leaveUid, reason) => {
+            setParticipantsUids(
+              participantsUids.filter(uid => uid !== leaveUid),
+            );
+          },
+        });
         const rep = engine.joinChannel(keys.tempToken, roomId, uid, {
           clientRoleType: ClientRoleType.ClientRoleBroadcaster,
         });
